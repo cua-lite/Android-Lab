@@ -6,7 +6,7 @@ from typing import Dict
 import xmltodict
 from lxml import etree
 
-from utils_mobile.specialCheck import *
+from android_lab.utils_mobile.specialCheck import *
 
 
 def get_words_in_certain_length(text, length=10):

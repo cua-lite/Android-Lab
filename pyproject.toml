@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "android-lab"
+version = "0.1.0"
+description = "AndroidLab (THUDM) — 138-task mobile benchmark, packaged for live eval from cua-lite."
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+    # XML parsing for UI Automator dumps — every judge reads compressed XML.
+    "lxml",
+    "xmltodict",
+    # Fuzzy app-name → package-name match (used by templates.packages.find_package).
+    "Levenshtein",
+    # YAML task configs — loaded by downstream env wrappers.
+    "PyYAML",
+    # Q&A judge calls OpenAI when OPENAI_API_KEY is set (optional; judge returns 0 otherwise).
+    "openai",
+]
+
+[project.optional-dependencies]
+# Upstream's full toolchain (eval driver, agent, docker) is intentionally
+# excluded from the base install — cua-lite live eval doesn't use it.
+# If you need the original `python eval.py` CLI, reinstate these manually.
+
+[tool.setuptools.packages.find]
+include = ["android_lab*"]
+exclude = ["agent*", "evaluation.tasks.human_ground_turth*", "tools*", "recorder*", "page_executor*"]
+
+[tool.setuptools.package-data]
+android_lab = [
+    "evaluation/config/*.yaml",
+    "evaluation/tasks/human_ground_turth/*.json",
+]

@@ -1,4 +1,4 @@
-from evaluation.task import *
+from android_lab.evaluation.task import *
 
 
 def extract_alarms(data):

@@ -1,5 +1,5 @@
-from evaluation.task import SingleTask
-from evaluation.utils import find_matching_subtrees
+from android_lab.evaluation.task import SingleTask
+from android_lab.evaluation.utils import find_matching_subtrees
 
 
 def extract_books_info(xml_compressed_tree):

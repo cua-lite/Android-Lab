@@ -1,8 +1,8 @@
 import re
 from typing import Dict
 
-from evaluation.task import SingleTask
-from evaluation.utils import find_matching_subtrees, find_subtrees_of_parents_with_key
+from android_lab.evaluation.task import SingleTask
+from android_lab.evaluation.utils import find_matching_subtrees, find_subtrees_of_parents_with_key
 
 
 def extract_bills_NewEditBK(xml_compressed_tree) -> Dict:
