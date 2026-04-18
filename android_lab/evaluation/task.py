@@ -15,6 +15,19 @@ from __future__ import annotations
 import logging
 import os
 
+# Re-export judge tree helpers so ``from evaluation.task import *`` in each
+# task file (e.g. calendar/calendar.py) gets ``find_subtrees_of_parents_with_key``
+# and ``find_matching_subtrees`` in scope — upstream's task.py did ``from
+# evaluation.utils import *`` which pulled these through transitively. Our
+# slimmed base module lost that re-export; without it every ``judge_page``
+# that calls a find_* helper raises ``NameError`` at runtime, silently
+# failing the task. This line restores the transitive export for all
+# vendored judges.
+from android_lab.evaluation.utils import (  # noqa: F401
+    find_matching_subtrees,
+    find_subtrees_of_parents_with_key,
+)
+
 logger = logging.getLogger(__name__)
 
 
