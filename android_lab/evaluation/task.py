@@ -7,8 +7,10 @@ driver can reconstruct it from git history.
 
 ``check_answer`` is preserved for the Q&A tasks (information retrieval) that
 compare ``finish(message=...)`` against a stored ground truth via LLM judge.
-It returns ``False`` when ``OPENAI_API_KEY`` is unset so offline eval
-doesn't crash — Q&A tasks score 0 instead of raising.
+Endpoint resolution: ``AZURE_API_BASE`` + ``AZURE_API_KEY`` → Azure;
+else ``OPENAI_API_KEY`` (+ ``OPENAI_BASE_URL``) → OpenAI; else False
+(reward=0, no crash). Model is ``gpt-4o-mini`` on both paths (matches
+upstream); override via ``self.args.judge_model``.
 """
 from __future__ import annotations
 
@@ -63,10 +65,12 @@ class SingleTask:
             return False
 
     def _llm_judge(self, question: str, model_answer: str, ground_truth: str) -> bool:
-        if not os.environ.get("OPENAI_API_KEY"):
+        azure_endpoint = os.environ.get("AZURE_API_BASE")
+        azure_key = os.environ.get("AZURE_API_KEY")
+        if not (azure_endpoint and azure_key) and not os.environ.get("OPENAI_API_KEY"):
             logger.warning(
-                "OPENAI_API_KEY not set — Q&A judge returns False (reward=0). "
-                "Set OPENAI_API_KEY to enable LLM-graded Q&A tasks."
+                "LLM judge has no credentials — set AZURE_API_BASE+AZURE_API_KEY "
+                "(preferred) or OPENAI_API_KEY. Returning False (reward=0)."
             )
             return False
         prompt = (
@@ -76,8 +80,16 @@ class SingleTask:
             f"Standard Answer: {ground_truth}"
         )
         try:
-            from openai import OpenAI
-            client = OpenAI()
+            if azure_endpoint and azure_key:
+                from openai import AzureOpenAI
+                client = AzureOpenAI(
+                    api_key=azure_key,
+                    azure_endpoint=azure_endpoint,
+                    api_version="2025-04-01-preview",
+                )
+            else:
+                from openai import OpenAI
+                client = OpenAI()  # honors OPENAI_API_KEY + OPENAI_BASE_URL
             model = (getattr(self.args, "judge_model", None) if self.args else None) or "gpt-4o-mini"
             r = client.chat.completions.create(
                 model=model,
